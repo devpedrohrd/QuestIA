@@ -6,6 +6,7 @@ import {
   IsString,
   Length,
 } from 'class-validator'
+import { FilterQuizDTO } from './filterQuiz.DTO'
 
 export enum TipoQuestao {
   MULTIPLA_ESCOLHA = 'multipla escolha',
@@ -25,21 +26,25 @@ export enum contextoEducacional {
   VESTIBULAR = 'vestibular',
 }
 
-export class FilterPromptsDTO {
-  @IsString()
-  @IsNotEmpty()
-  @Length(3, 50)
-  tema: string
-  @IsEnum(TipoQuestao)
-  @IsNotEmpty()
-  tipoDePergunta: TipoQuestao
-  @IsEnum(NivelDificuldade)
-  @IsNotEmpty()
-  nivelDeDificuldade: NivelDificuldade
+export class FilterPromptsDTO implements Partial<FilterQuizDTO> {
   @IsInt()
   @IsOptional()
-  quantidade?: number | 10
+  quantidade: number = 10
+
+  @IsEnum(TipoQuestao)
+  @IsOptional()
+  tipoDePergunta: TipoQuestao = TipoQuestao.MULTIPLA_ESCOLHA
+
+  @IsString()
+  @Length(3, 25, { message: 'O tema deve ter entre 3 e 25 caracteres' })
+  @IsOptional()
+  tema: string
+
+  @IsEnum(NivelDificuldade)
+  @IsOptional()
+  nivelDeDificuldade: NivelDificuldade = NivelDificuldade.MEDIO
+
   @IsEnum(contextoEducacional)
   @IsOptional()
-  contextoEducacional?: contextoEducacional
+  contextoEducacional: contextoEducacional = contextoEducacional.ENSINO_MEDIO
 }
