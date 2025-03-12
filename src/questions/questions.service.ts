@@ -193,4 +193,52 @@ export class QuestionsService {
       )
     }
   }
+
+  async findQuestionOfQuizz(quizId: string, userId: string) {
+    const quiz = await this.prismaService.$transaction(async (prisma) => {
+      const quiz = await prisma.quiz.findFirst({
+        where: {
+          id: quizId,
+          professorId: userId,
+        },
+      })
+
+      if (!quiz) {
+        throw new NotFoundException(
+          'Quiz não encontrado ou não pertence ao usuário.',
+        )
+      }
+
+      const questions = await prisma.question.findMany({
+        where: {
+          quizId,
+          quiz: {
+            professorId: userId,
+          },
+        },
+        include: {
+          alternatives: {
+            omit: {
+              id: true,
+              questionId: true,
+            },
+          },
+        },
+        omit: {
+          respostaCorreta: true,
+          explicacao: true,
+        },
+      })
+
+      return questions
+    })
+
+    const questions = quiz
+
+    if (!questions || questions.length === 0) {
+      throw new NotFoundException('Nenhuma questão encontrada para este quiz.')
+    }
+
+    return questions
+  }
 }
