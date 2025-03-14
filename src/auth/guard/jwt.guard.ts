@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common'
@@ -27,37 +28,45 @@ export class JwtAuthGuard extends AuthGuard('jwt') implements CanActivate {
       throw new UnauthorizedException('Token de acesso não encontrado.')
     }
 
+    let user: any
+
     try {
-      const decoded = await this.jwtService.verify(token, {
+      user = await this.jwtService.verify(token, {
         secret: process.env.JWT_ACCESS_SECRET,
       })
 
-      const userReq = {
-        id: decoded.id,
-        email: decoded.email,
-        role: decoded.role,
-      }
+      request['user'] = user
+    } catch (error) {
+      console.log(error)
 
-      request['user'] = userReq
+      throw new ForbiddenException('Token inválido ou expirado')
+    }
+
+    try {
       const requiredRoles = this.reflector.getAllAndOverride<Role[]>('role', [
         context.getHandler(),
         context.getClass(),
       ])
 
-      if (!requiredRoles) {
+      if (!requiredRoles || requiredRoles.length === 0) {
         return true
       }
 
-      const hasRole = requiredRoles.includes(request['user'].role)
+      if (!user.role) {
+        throw new ForbiddenException('Usuário sem permissão')
+      }
 
+      const hasRole = requiredRoles.includes(user.role)
       if (!hasRole) {
-        throw new UnauthorizedException(
-          `Acesso negado. È necessário ser ${requiredRoles.join(', ')} .`,
+        throw new ForbiddenException(
+          `Acesso negado! É necessário ser ${requiredRoles.join(', ')}`,
         )
       }
 
-      return hasRole
+      return true
     } catch (err) {
+      console.log(err)
+
       throw new UnauthorizedException('Token inválido ou expirado.')
     }
   }

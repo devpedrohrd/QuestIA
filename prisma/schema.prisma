@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  nome      String   @db.VarChar(50)
+  email     String   @unique @db.VarChar(50)
+  googleId  String   @unique @db.VarChar(25)
+  role      Role
+  createdAt DateTime @default(now())
+
+  quizzes   Quiz[]     @relation("ProfessorQuizzes")
+  responses Response[]
+}
+
+model Quiz {
+  id               String           @id @default(uuid())
+  titulo           String           @db.VarChar(50)
+  tema             String           @db.VarChar(50)
+  nivelDificuldade NivelDificuldade
+  quantidade       Int              @db.Integer
+  tipoPergunta     TipoPergunta
+  professorId      String
+  professor        User             @relation("ProfessorQuizzes", fields: [professorId], references: [id])
+  link             String
+  status           Status
+  createdAt        DateTime         @default(now())
+
+  questions Question[]
+  responses Response[]
+}
+
+model Question {
+  id               String           @id @default(uuid())
+  quizId           String
+  quiz             Quiz             @relation(fields: [quizId], references: [id])
+  pergunta         String
+  tipo             TipoPergunta
+  respostaCorreta  String
+  explicacao       String
+  alternatives     Alternative[]
+  responsesAnswers ResponseAnswer[]
+}
+
+model Alternative {
+  id         String   @id @default(uuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id])
+  letra      String
+  texto      String
+}
+
+model Response {
+  id        String   @id @default(uuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id])
+  alunoId   String
+  aluno     User     @relation(fields: [alunoId], references: [id])
+  createdAt DateTime @default(now())
+
+  responsesAnswers ResponseAnswer[]
+}
+
+model ResponseAnswer {
+  id                String   @id @default(uuid())
+  responseId        String
+  response          Response @relation(fields: [responseId], references: [id])
+  questionId        String
+  question          Question @relation(fields: [questionId], references: [id])
+  respostaEscolhida String
+  correto           Boolean
+}
+
+enum Role {
+  professor
+  aluno
+}
+
+enum NivelDificuldade {
+  facil
+  medio
+  dificil
+}
+
+enum TipoPergunta {
+  multipla_escolha
+  verdadeiro_falso
+}
+
+enum Status {
+  ativo
+  fechado
+}

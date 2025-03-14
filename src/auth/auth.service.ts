@@ -13,13 +13,13 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  private generateTokens(payload: any) {
-    const access_token = this.jwtService.sign(payload, {
+  private async generateTokens(payload: any) {
+    const access_token = await this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
       expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRES'),
     })
 
-    const refresh_token = this.jwtService.sign(payload, {
+    const refresh_token = await this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES'),
     })
@@ -55,14 +55,14 @@ export class AuthService {
 
   async login(user: any) {
     const payload = { id: user.id, email: user.email, role: user.role }
-    const { access_token, refresh_token } = this.generateTokens(payload)
+    const { access_token, refresh_token } = await this.generateTokens(payload)
 
     return { access_token, refresh_token }
   }
 
   async refreshToken(refreshToken: string) {
     try {
-      const payload = this.jwtService.verify(refreshToken, {
+      const payload = await this.jwtService.verify(refreshToken, {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
       })
 
@@ -72,7 +72,7 @@ export class AuthService {
 
       if (!user) throw new UnauthorizedException('Refresh Token inválido')
 
-      return this.login(user)
+      return await this.login(user)
     } catch (error) {
       throw new UnauthorizedException('Token inválido ou expirado')
     }

@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common'
-import { QuestionsModule } from './questions/questions.module'
+import { QuizzesModule } from './quizzes/quizzes.module'
 import { ConfigModule } from '@nestjs/config'
-import { AuthModule } from './auth/auth.module';
+import { AuthModule } from './auth/auth.module'
 
 @Module({
-  imports: [QuestionsModule, ConfigModule.forRoot(), AuthModule],
+  imports: [QuizzesModule, ConfigModule.forRoot(), AuthModule],
   controllers: [],
   providers: [],
 })
