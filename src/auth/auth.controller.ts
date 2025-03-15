@@ -10,6 +10,7 @@ import {
 import { AuthGuard } from '@nestjs/passport'
 import { AuthService } from './auth.service'
 import { Request, Response } from 'express'
+import { Role } from '@prisma/client'
 
 @Controller('auth')
 export class AuthController {
@@ -40,12 +41,9 @@ export class AuthController {
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     })
 
-    return res.json({
-      message: 'Login realizado com sucesso',
-      user: req['user'],
-      access_token,
-      refresh_token,
-    })
+    return req['user'].role === Role.professor
+      ? res.redirect('http://localhost:3000/teacher')
+      : res.redirect('http://localhost:3000/student')
   }
 
   @Post('refresh-token')
@@ -69,12 +67,6 @@ export class AuthController {
       secure: true,
       sameSite: 'strict',
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    })
-
-    return res.json({
-      message: 'Refresh Token realizado com sucesso',
-      access_token,
-      refresh_token,
     })
   }
 
