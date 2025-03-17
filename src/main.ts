@@ -21,7 +21,7 @@ async function bootstrap() {
   )
 
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: process.env.NEXT_PUBLIC_FRONTEND_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
