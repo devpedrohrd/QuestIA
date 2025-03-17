@@ -1,14 +1,6 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Req,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common'
+import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common'
 import { AnswerService } from './answer.service'
 import { Request } from 'express'
-import { userReq } from 'mocks'
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard'
 
 @Controller('answer')
@@ -21,6 +13,6 @@ export class AnswerController {
     @Param('quizId') quizId: string,
     @Req() req: Request,
   ) {
-    return await this.answerService.findQuizzesOfUser(userReq, quizId)
+    return await this.answerService.findQuizzesOfUser(req['user'], quizId)
   }
 }
