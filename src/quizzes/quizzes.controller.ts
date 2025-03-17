@@ -24,7 +24,7 @@ export class QuizzesController {
   @Roles(Role.professor)
   async createQuiz(@Body() filterQuizDTO: FilterQuizDTO, @Req() req: Request) {
     const user = req['user']
-    return this.quizzesService.gerarQuiz(filterQuizDTO, user)
+    return this.quizzesService.generateQuiz(filterQuizDTO, user)
   }
 
   @Get()
@@ -32,12 +32,12 @@ export class QuizzesController {
   async getQuizzes(@Req() req: Request) {
     const user = req['user']
 
-    return this.quizzesService.findAllQuiz(user)
+    return this.quizzesService.findAllQuizzes(user)
   }
 
   @Delete(':quizId')
   @Roles(Role.professor)
   async deleteQuiz(@Param('quizId') quizId: string, @Req() req: Request) {
-    return await this.quizzesService.deleteQuizzes(quizId, req['user'])
+    return await this.quizzesService.deleteQuiz(quizId, req['user'])
   }
 }

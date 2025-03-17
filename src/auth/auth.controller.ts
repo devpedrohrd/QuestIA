@@ -42,8 +42,8 @@ export class AuthController {
     })
 
     return req['user'].role === Role.professor
-      ? res.redirect('http://localhost:3000/teacher')
-      : res.redirect('http://localhost:3000/student')
+      ? res.redirect(`${process.env.NEXT_PUBLIC_FRONTEND_URL}/teacher`)
+      : res.redirect(`${process.env.NEXT_PUBLIC_FRONTEND_URL}/students`)
   }
 
   @Post('refresh-token')

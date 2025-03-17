@@ -2,7 +2,8 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
 } from '@nestjs/common'
 import { PrismaService } from 'src/config/Database/Prisma.service'
 import { FilterQuizDTO } from './DTO/filterQuiz.DTO'
@@ -11,7 +12,7 @@ import { FilterQuizDTO } from './DTO/filterQuiz.DTO'
 export class QuizzesService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async gerarQuiz(filterQuizDTO: FilterQuizDTO, user: any) {
+  async generateQuiz(filterQuizDTO: FilterQuizDTO, user: any) {
     let {
       titulo,
       tipoPergunta,
@@ -33,7 +34,7 @@ export class QuizzesService {
       })
 
       if (quizExisting) {
-        throw new UnauthorizedException('Quiz já existe')
+        throw new ConflictException('Quiz already exists')
       }
 
       const createdQuiz = await this.prismaService.quiz.create({
@@ -50,10 +51,10 @@ export class QuizzesService {
       })
 
       if (!createdQuiz) {
-        throw new UnauthorizedException('Erro ao criar quiz')
+        throw new BadRequestException('Error creating quiz')
       }
 
-      const uniqueLink = `http://localhost:3334/questions/${createdQuiz.id}`
+      const uniqueLink = `${process.env.BACKEND_URL}/questions/${createdQuiz.id}`
 
       const updatedQuiz = await this.prismaService.quiz.update({
         where: { id: createdQuiz.id },
@@ -61,17 +62,17 @@ export class QuizzesService {
       })
 
       if (!updatedQuiz) {
-        throw new UnauthorizedException('Erro ao gerar link do quiz')
+        throw new InternalServerErrorException('Error generating quiz link')
       }
 
       return createdQuiz
     } catch (error) {
-      console.error('Erro ao gerar e salvar quiz:', error)
-      return 'Ocorreu um erro ao gerar e armazenar o quiz.'
+      console.error('Error generating and saving quiz:', error)
+      throw error
     }
   }
 
-  async findAllQuiz(user: any) {
+  async findAllQuizzes(user: any) {
     const { id } = user
 
     try {
@@ -85,18 +86,18 @@ export class QuizzesService {
         },
       })
 
-      if (!quizzes) {
-        throw new UnauthorizedException('Nenhum quiz encontrado')
+      if (!quizzes || quizzes.length === 0) {
+        throw new NotFoundException('No quizzes found')
       }
 
       return quizzes
     } catch (error) {
-      console.error('Erro ao buscar quizzes:', error)
-      return 'Ocorreu um erro ao buscar os quizzes.'
+      console.error('Error fetching quizzes:', error)
+      throw error
     }
   }
 
-  async deleteQuizzes(quizId: string, user: any) {
+  async deleteQuiz(quizId: string, user: any) {
     const quizExisting = await this.prismaService.quiz.findFirst({
       where: {
         id: quizId,
@@ -106,7 +107,7 @@ export class QuizzesService {
 
     if (!quizExisting) {
       throw new NotFoundException(
-        'Quiz não encontrado ou não pertence a este usuário!',
+        'Quiz not found or does not belong to this user!',
       )
     }
 
@@ -141,11 +142,11 @@ export class QuizzesService {
         })
       })
 
-      console.log('Quiz e todos os dados associados deletados com sucesso!')
-      return { message: 'Quiz deletado com sucesso!' }
+      console.log('Quiz and all associated data deleted successfully!')
+      return { message: 'Quiz deleted successfully!' }
     } catch (error) {
-      console.error('Erro ao deletar quiz:', error)
-      throw new InternalServerErrorException('Erro ao deletar o quiz.')
+      console.error('Error deleting quiz:', error)
+      throw new InternalServerErrorException('Error deleting the quiz.')
     }
   }
 }

@@ -56,4 +56,6 @@ export class AnswerService {
 
     return quizzesRespondidos
   }
+
+  async rankingStudents(quizId: string) {}
 }
