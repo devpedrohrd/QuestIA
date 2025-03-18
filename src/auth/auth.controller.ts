@@ -31,7 +31,7 @@ export class AuthController {
       httpOnly: true,
       secure: true,
       sameSite: 'lax',
-      domain: process.env.DOMAIN,
+      domain: 'https://quest-ia-front-end.vercel.app',
       expires: new Date(Date.now() + 15 * 60 * 1000),
     })
 
@@ -39,7 +39,7 @@ export class AuthController {
       httpOnly: true,
       secure: true,
       sameSite: 'lax',
-      domain: process.env.DOMAIN,
+      domain: 'https://quest-ia-front-end.vercel.app',
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     })
 
