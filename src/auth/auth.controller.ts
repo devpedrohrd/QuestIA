@@ -29,13 +29,13 @@ export class AuthController {
 
     res.cookie('access_token', access_token, {
       secure: true,
-      sameSite: 'strict',
+      sameSite: 'lax',
       expires: new Date(Date.now() + 15 * 60 * 1000),
     })
 
     res.cookie('refresh_token', refresh_token, {
       secure: true,
-      sameSite: 'strict',
+      sameSite: 'lax',
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     })
 
@@ -55,13 +55,13 @@ export class AuthController {
 
     res.cookie('access_token', access_token, {
       secure: true,
-      sameSite: 'strict',
+      sameSite: 'lax',
       expires: new Date(Date.now() + 15 * 60 * 1000),
     })
 
     res.cookie('refresh_token', refresh_token, {
       secure: true,
-      sameSite: 'strict',
+      sameSite: 'lax',
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     })
   }
