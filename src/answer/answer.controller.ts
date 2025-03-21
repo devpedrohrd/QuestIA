@@ -2,7 +2,6 @@ import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common'
 import { AnswerService } from './answer.service'
 import { Request } from 'express'
 import { JwtAuthGuard } from 'src/auth/guard/jwt.guard'
-import { userReq } from 'mocks'
 import { Roles } from 'src/decorators/Roles.decorator'
 import { Role } from '@prisma/client'
 
