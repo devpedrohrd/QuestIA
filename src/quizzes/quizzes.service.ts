@@ -177,7 +177,6 @@ export class QuizzesService {
         })
       })
 
-      console.log('Quiz and all associated data deleted successfully!')
       return { message: 'Quiz deleted successfully!' }
     } catch (error) {
       console.error('Error deleting quiz:', error)

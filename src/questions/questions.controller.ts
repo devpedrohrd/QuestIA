@@ -23,8 +23,6 @@ export class QuestionsController {
   @Post(':quizId')
   @Roles(Role.professor)
   create(@Param('quizId') quizId: string, @Req() req: Request) {
-    console.log(req['user'])
-
     return this.questionsService.create(quizId, req['user'])
   }
 

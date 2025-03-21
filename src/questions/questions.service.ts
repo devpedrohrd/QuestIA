@@ -124,13 +124,11 @@ export class QuestionsService {
             })
           }
 
-          console.log(`Questão salva: ${question.id}`)
         } catch (error) {
           console.error('Erro ao salvar questão:', error)
         }
       }
 
-      console.log('Todas as questões foram processadas.')
       return 'As questões foram armazenadas no banco com sucesso.'
     } catch (error) {
       console.error('Erro ao salvar questões:', error)

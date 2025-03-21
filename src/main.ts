@@ -26,13 +26,6 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   })
-
-  console.log(
-    'CORS: Configurado para origin:',
-    process.env.NEXT_PUBLIC_FRONTEND_URL,
-  )
-
-
   await app.listen(3333)
 }
 bootstrap()
