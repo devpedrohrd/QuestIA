@@ -121,4 +121,36 @@ export class AnswerService {
 
     return Array.from(rankingMap.values()).sort((a, b) => b.acertos - a.acertos)
   }
+
+  async getBestAttemptByAluno(quizId: string) {
+    const attempts = await this.prismaService.response.findMany({
+      where: {
+        quizId,
+      },
+      include: {
+        responsesAnswers: {
+          include: {
+            question: {
+              include: {
+                alternatives: true,
+              },
+            },
+          },
+        },
+        quiz: true,
+      },
+    })
+
+    if (attempts.length === 0) {
+      throw new NotFoundException('Nenhuma tentativa encontrada')
+    }
+
+    const sorted = attempts.sort((a, b) => {
+      const acertosA = a.responsesAnswers.filter((r) => r.correto).length
+      const acertosB = b.responsesAnswers.filter((r) => r.correto).length
+      return acertosB - acertosA
+    })
+
+    return sorted[0] // Retorna a tentativa com mais acertos
+  }
 }

@@ -73,26 +73,61 @@ export class QuizzesService {
   }
 
   async findAllQuizzes(user: any) {
-    const { id } = user
+    const { id, role } = user
 
     try {
-      const quizzes = await this.prismaService.quiz.findMany({
-        where: {
-          responses: {
-            some: {
-              alunoId: id,
+      let quizzes: any = []
+
+      if (role === 'aluno') {
+        quizzes = await this.prismaService.quiz.findMany({
+          where: {
+            responses: {
+              some: {
+                alunoId: id,
+              },
             },
           },
-        },
-      })
+          include: {
+            professor: {
+              select: {
+                nome: true,
+                email: true,
+              },
+            },
+          },
+          omit: {
+            createdAt: true,
+            status: true,
+          },
+        })
+      } else if (role === 'professor') {
+        quizzes = await this.prismaService.quiz.findMany({
+          where: {
+            professorId: id,
+          },
+          include: {
+            _count: {
+              select: {
+                responses: true,
+              },
+            },
+          },
+          omit: {
+            createdAt: true,
+            status: true,
+          },
+        })
+      } else {
+        throw new Error('Tipo de usuário não reconhecido')
+      }
 
       if (!quizzes || quizzes.length === 0) {
-        throw new NotFoundException('No quizzes found')
+        throw new NotFoundException('Nenhum quiz encontrado')
       }
 
       return quizzes
     } catch (error) {
-      console.error('Error fetching quizzes:', error)
+      console.error('Erro ao buscar quizzes:', error)
       throw error
     }
   }
