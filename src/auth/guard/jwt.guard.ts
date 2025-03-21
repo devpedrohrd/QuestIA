@@ -9,7 +9,6 @@ import { Reflector } from '@nestjs/core'
 import { JwtService } from '@nestjs/jwt'
 import { AuthGuard } from '@nestjs/passport'
 import { Role } from '@prisma/client'
-import { Request } from 'express'
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') implements CanActivate {
@@ -21,17 +20,14 @@ export class JwtAuthGuard extends AuthGuard('jwt') implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext) {
-    const request = context.switchToHttp().getRequest<Request>()
-    const token = request.cookies['access_token']
+    const request = context.switchToHttp().getRequest()
+    const authorization = request.headers['authorization']
 
-    console.log('JwtAuthGuard: Iniciando autenticação...')
-    console.log('JwtAuthGuard: Token recebido:', token)
-
-    if (!token) {
-      console.log('JwtAuthGuard: Token de acesso não encontrado.')
-      throw new UnauthorizedException('Token de acesso não encontrado.')
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+      throw new ForbiddenException('Token de autenticação ausente ou inválido')
     }
 
+    const token = authorization.replace('Bearer ', '')
     let user: any
 
     try {

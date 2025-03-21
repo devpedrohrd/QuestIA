@@ -23,48 +23,26 @@ export class AuthController {
   @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    const { access_token, refresh_token } = await this.authService.login(
+    const { access_token, refresh_token,role } = await this.authService.login(
       req['user'],
     )
 
-    res.cookie('access_token', access_token, {
-      secure: true,
-      sameSite: 'none',
-      expires: new Date(Date.now() + 15 * 60 * 1000),
-    })
+    res.setHeader('Authorization', `Bearer ${access_token}`)
+    res.setHeader('X-Refresh-Token', refresh_token)
 
-    res.cookie('refresh_token', refresh_token, {
-      secure: true,
-      sameSite: 'none',
-      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    })
-
-    return req['user'].role === Role.professor
-      ? res.redirect(`${process.env.NEXT_PUBLIC_FRONTEND_URL}/teacher`)
-      : res.redirect(`${process.env.NEXT_PUBLIC_FRONTEND_URL}/students`)
+    res.redirect(
+      `${process.env.NEXT_PUBLIC_FRONTEND_URL}/auth/callback?access_token=${access_token}&refresh_token=${refresh_token}&role=${role}`,
+    )
   }
 
   @Post('refresh-token')
-  async refreshToken(@Req() req: Request, @Res() res: Response) {
-    const refreshToken = req.cookies['refresh_token']
+  async refreshToken(@Req() req: Request) {
+    const refreshToken = req.headers['authorization']?.replace('Bearer ', '')
+
     if (!refreshToken)
       throw new UnauthorizedException('Refresh Token não encontrado')
 
-    const { refresh_token, access_token } =
-      await this.authService.refreshToken(refreshToken)
-
-    res.cookie('access_token', access_token, {
-      secure: true,
-      sameSite: 'none',
-      expires: new Date(Date.now() + 15 * 60 * 1000),
-    })
-
-    res.cookie('refresh_token', refresh_token, {
-      secure: true,
-      sameSite: 'none',
-      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      domain: ''
-    })
+    return await this.authService.refreshToken(refreshToken)
   }
 
   @Post('logout')

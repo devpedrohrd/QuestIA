@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common'
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common'
 import { PrismaService } from 'src/config/Database/Prisma.service'
 
 @Injectable()
@@ -57,5 +61,64 @@ export class AnswerService {
     return quizzesRespondidos
   }
 
-  async rankingStudents(quizId: string) {}
+  async rankingStudents(quizId: string) {
+    const quizExists = await this.prismaService.quiz.findUnique({
+      where: { id: quizId },
+      select: { id: true },
+    })
+
+    if (!quizExists) {
+      throw new NotFoundException('Quiz não encontrado!')
+    }
+
+    const attempts = await this.prismaService.response.findMany({
+      where: { quizId },
+      include: {
+        aluno: {
+          select: {
+            id: true,
+            nome: true,
+            email: true,
+          },
+        },
+        responsesAnswers: {
+          select: {
+            correto: true,
+          },
+        },
+      },
+    })
+
+    const rankingMap = new Map<string, any>()
+
+    attempts.forEach((attempt) => {
+      const alunoId = attempt.aluno.id
+      const acertos = attempt.responsesAnswers.filter(
+        (res) => res.correto,
+      ).length
+      const totalRespostas = attempt.responsesAnswers.length
+      const desempenho = ((acertos / totalRespostas) * 100).toFixed(2) + '%'
+
+      if (rankingMap.has(alunoId)) {
+        rankingMap.get(alunoId).tentativas += 1
+
+        if (acertos > rankingMap.get(alunoId).acertos) {
+          rankingMap.get(alunoId).acertos = acertos
+          rankingMap.get(alunoId).desempenho = desempenho
+        }
+      } else {
+        rankingMap.set(alunoId, {
+          alunoId,
+          nome: attempt.aluno.nome,
+          email: attempt.aluno.email,
+          acertos,
+          totalRespostas,
+          desempenho,
+          tentativas: 1,
+        })
+      }
+    })
+
+    return Array.from(rankingMap.values()).sort((a, b) => b.acertos - a.acertos)
+  }
 }

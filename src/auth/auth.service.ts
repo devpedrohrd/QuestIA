@@ -57,7 +57,7 @@ export class AuthService {
     const payload = { id: user.id, email: user.email, role: user.role }
     const { access_token, refresh_token } = await this.generateTokens(payload)
 
-    return { access_token, refresh_token }
+    return { access_token, refresh_token, role: user.role }
   }
 
   async refreshToken(refreshToken: string) {
