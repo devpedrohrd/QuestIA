@@ -122,10 +122,11 @@ export class AnswerService {
     return Array.from(rankingMap.values()).sort((a, b) => b.acertos - a.acertos)
   }
 
-  async getBestAttemptByAluno(quizId: string) {
+  async getBestAttemptByAluno(quizId: string, user: any) {
     const attempts = await this.prismaService.response.findMany({
       where: {
         quizId,
+        alunoId: user.id,
       },
       include: {
         responsesAnswers: {

@@ -26,7 +26,7 @@ export class AnswerController {
 
   @Get('/best/:quizId')
   @Roles(Role.professor, Role.aluno)
-  async best(@Param('quizId') quizId: string) {
-    return this.answerService.getBestAttemptByAluno(quizId)
+  async best(@Param('quizId') quizId: string, @Req() req: Request) {
+    return this.answerService.getBestAttemptByAluno(quizId, req['user'])
   }
 }
