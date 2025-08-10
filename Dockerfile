@@ -1,14 +1,38 @@
-# Usar a versão mais recente estável do Node.js
-FROM node:alpine
+FROM node:alpine AS builder
 
-# Definir diretório de trabalho dentro do container
 WORKDIR /app
 
-# Instalar pacotes necessários (Git e CLI do Nest.js)
-RUN apk add --no-cache git && \
-    npm install -g @nestjs/cli
+RUN npm config set registry https://registry.npmmirror.com \
+    && npm config set fetch-retries 5 \
+    && npm config set fetch-retry-mintimeout 20000 \
+    && npm config set fetch-retry-maxtimeout 60000
+
+COPY package*.json ./
+RUN npm install
+
+# Copia os arquivos do Prisma e gera os clients
+COPY prisma ./prisma
+RUN npx prisma generate
+
+COPY . .
+RUN npm run build
+
+FROM node:alpine
+
+WORKDIR /app
+
+RUN npm config set registry https://registry.npmmirror.com \
+    && npm config set fetch-retries 5 \
+    && npm config set fetch-retry-mintimeout 20000 \
+    && npm config set fetch-retry-maxtimeout 60000
+
+COPY package*.json ./
+RUN npm install --omit=dev
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 EXPOSE 3000
 
-# Manter o container ativo
-CMD ["tail", "-f", "/dev/null"]
+CMD ["node", "dist/main"]
