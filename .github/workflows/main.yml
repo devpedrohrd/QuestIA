@@ -3,7 +3,7 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - main  # roda quando fizer commit/push na branch main
+      - master  # roda quando fizer commit/push na branch main
 
 jobs:
   build:
